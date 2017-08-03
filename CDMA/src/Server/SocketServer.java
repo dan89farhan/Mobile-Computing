@@ -5,11 +5,14 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Client.ChipCode;
+
 public class SocketServer implements Runnable {
 	public ServerSocket server = null;
 	public ServerThread clients[];
 	public Thread thread = null;
-	public int clientCount = 0, port = 13000;
+	public int port = 13000;
+	static int clientCount = 0;
 
 	public SocketServer() {
 		clients = new ServerThread[50];
@@ -42,7 +45,7 @@ public class SocketServer implements Runnable {
 				System.out.println("\nWaiting for a client ...\n");
 				addThread(server.accept());
 			} catch (Exception ioe) {
-				System.out.println("\nServer accept error: ");
+				System.out.println("\nServer accept error: "+ioe);
 
 			}
 		}
@@ -54,9 +57,10 @@ public class SocketServer implements Runnable {
 			System.out.println("\nClient accepted: " + socket);
 			clients[clientCount] = new ServerThread(this, socket);
 			try {
-				clients[clientCount].open();
-				clients[clientCount].start();
 				clientCount++;
+				clients[clientCount-1].open();
+				clients[clientCount-1].start();
+				
 			} catch (IOException ioe) {
 				System.out.println("\nError opening thread: " + ioe);
 			}
@@ -66,15 +70,16 @@ public class SocketServer implements Runnable {
 	}
 
 	public void handle(int ID, ChipCode cc) {
+		System.out.println("In Server Handle "+cc.toString());
+		System.out.println("cc Status "+cc.status);
 		if (cc.status.equals(".bye")) {
 			Announce("signout", "SERVER", cc.message);
 			remove(ID);
+		} else if (cc.status.equals("connection")) {
+			// clients[findClient(ID)].send("test:SERVER:OK:"+data[1]);
+			clients[findClient(ID)].send(cc);
 		}
-                else if(cc.status.equals("connection")){
-                    //clients[findClient(ID)].send("test:SERVER:OK:"+data[1]);
-                    clients[findClient(ID)].send(cc);
-                }
-                //else if(data[])
+		// else if(data[])
 
 	}
 
@@ -98,13 +103,12 @@ public class SocketServer implements Runnable {
 		}
 	}
 
-	
 	public void Announce(String type, String sender, String content) {
 		String msg = type + ":" + sender + ":" + content + ":" + "All";
 		// Message msg = new Message(type, sender, content, "All");
-		//for (int i = 0; i < clientCount; i++) {
-		//	clients[i].send(msg);
-		//}
+		// for (int i = 0; i < clientCount; i++) {
+		// clients[i].send(msg);
+		// }
 	}
 
 	private int findClient(int ID) {

@@ -4,11 +4,9 @@ package Client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
-public class CDMAClient implements Runnable {
+ public class CDMAClient implements Runnable {
     
     public SocketClient client;
     public int port=13000;
@@ -29,8 +27,8 @@ public class CDMAClient implements Runnable {
             clientThread.start();
             serverConnect = true;
             //client.send("test:testUser:connection:SERVER");
-            cc.status = "test";
-            cc.message="connection";
+            cc.status = "connection";
+            cc.message="assign chip code";
             cc.to = "SERVER";
             client.send(cc);
             }
@@ -53,9 +51,14 @@ public class CDMAClient implements Runnable {
         while(true){
             try {
                 String msg = In.readLine();
-                System.out.println("Your message ");
+                int data = Integer.parseInt(msg);
+                cc.status = "message";
+                cc.message = msg;
+                cc.to = "SERVER";
+                client.send(cc);
+                System.out.println("Your message "+msg);
             } catch (IOException ex) {
-                System.out.println("Error in reading "+ex);
+                //System.out.println("Error in reading "+ex);
             }
         }
         
