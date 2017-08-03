@@ -15,20 +15,28 @@ public class CDMAClient implements Runnable {
     public String serverAddr="localhost";
     public Thread clientThread;
     
+    ChipCode cc = null;
     public boolean serverConnect = false;
     
     InputStreamReader Ins = null;
     BufferedReader In = null;
     CDMAClient(){
         try{
-                client = new SocketClient(this);
-                clientThread = new Thread(client);
-                clientThread.start();
-                serverConnect = true;
-                client.send("test:testUser:connection:SERVER");
+            cc = new ChipCode();
+            client = new SocketClient(this, cc);
+
+            clientThread = new Thread(client);
+            clientThread.start();
+            serverConnect = true;
+            //client.send("test:testUser:connection:SERVER");
+            cc.status = "test";
+            cc.message="connection";
+            cc.to = "SERVER";
+            client.send(cc);
             }
             catch(Exception ex){
                 System.out.println("[Application > Me] : Server not found\n "+ex);
+                ex.printStackTrace();
             }
     }
     

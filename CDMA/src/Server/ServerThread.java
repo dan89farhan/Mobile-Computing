@@ -3,6 +3,8 @@ package Server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -12,9 +14,14 @@ public class ServerThread extends Thread {
 	public Socket socket = null;
 	public int ID = -1;
 	public String username = "";
-	public PrintWriter Out;
-	public BufferedReader In;
-	public InputStreamReader Ins;
+	//public PrintWriter Out;
+	//public BufferedReader In;
+	//public InputStreamReader Ins;
+        
+        ObjectOutputStream Out;
+        ObjectInputStream In;
+        
+        ChipCode cc = null;
 
 	public ServerThread(SocketServer _server, Socket _socket) {
 		super();
@@ -25,11 +32,16 @@ public class ServerThread extends Thread {
 	}
 
 	public void open() throws IOException {
-		Out = new PrintWriter(socket.getOutputStream());
-		Out.flush();
-
-		Ins = new InputStreamReader(socket.getInputStream());
-		In = new BufferedReader(Ins);
+		//Out = new PrintWriter(socket.getOutputStream());
+		
+                
+                Out = new ObjectOutputStream(socket.getOutputStream());
+                Out.flush();
+                
+		//Ins = new InputStreamReader(socket.getInputStream());
+		//In = new BufferedReader(Ins);
+                
+                In = new ObjectInputStream(socket.getInputStream());
 
 	}
 
@@ -37,10 +49,12 @@ public class ServerThread extends Thread {
 		System.out.println("\nServer Thread " + ID + " running.\n");
 		while (true) {
 			try {
-				String msg = In.readLine();
-				System.out.println(msg);
-				String data[] = msg.split(":");
-				server.handle(ID, data);
+                            //String msg = In.readLine();
+                            
+                            cc = (ChipCode)In.readObject();
+                            System.out.println(cc.toString());
+                            //String data[] = msg.split(":");
+                            server.handle(ID, cc);
 
                         } catch (Exception ioe) {
 				System.out.println(ID + " ERROR reading: " + ioe.getMessage());
@@ -50,11 +64,12 @@ public class ServerThread extends Thread {
 		}
 	}
 
-	public void send(String msg) {
+	public void send(ChipCode cc) {
 		try {
-			Out.println(msg);
-			Out.flush();
-			System.out.println("Outgoing : " + msg);
+                    //Out.println(msg);
+                    Out.writeObject(cc);
+                    Out.flush();
+                    System.out.println("Outgoing : " + cc);
 		} catch (Exception ex) {
 			System.out.println("Exception [SocketClient : send(...)]");
 		}
