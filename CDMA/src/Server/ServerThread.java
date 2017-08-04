@@ -49,11 +49,8 @@ public class ServerThread extends Thread{
 		while (true) {
 			try {
 				// String msg = In.readLine();
-				
-				
-				
 				cc = (ChipCode) In.readObject();
-				
+				System.out.println("Incomming: "+cc);
 				switch(SocketServer.clientCount){
 				case 1:
 					cc.chipCode[0] = 1;
@@ -66,7 +63,7 @@ public class ServerThread extends Thread{
 				
 				}
 				
-				System.out.println(cc.toString());
+				//System.out.println(cc.toString());
 				// String data[] = msg.split(":");
 				server.handle(ID, cc);
 

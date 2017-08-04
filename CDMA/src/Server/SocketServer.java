@@ -70,18 +70,32 @@ public class SocketServer implements Runnable {
 	}
 
 	public void handle(int ID, ChipCode cc) {
-		System.out.println("In Server Handle "+cc.toString());
-		System.out.println("cc Status "+cc.status);
+		//System.out.println("In Server Handle "+cc.toString());
+		//System.out.println("cc Status "+cc.status);
 		if (cc.status.equals(".bye")) {
-			Announce("signout", "SERVER", cc.message);
+			//Announce("signout", "SERVER", cc.message);
 			remove(ID);
 		} else if (cc.status.equals("connection")) {
 			// clients[findClient(ID)].send("test:SERVER:OK:"+data[1]);
 			clients[findClient(ID)].send(cc);
 		}
+                else if(cc.status.equals("message")){
+                    //Announce("signout", "SERVER", cc.message);
+                    Announce(cc);
+                    //findUserThread(cc.to).send(cc);
+                }
 		// else if(data[])
 
 	}
+        
+        public ServerThread findUserThread(String usr){
+        for(int i = 0; i < clientCount; i++){
+            if(clients[i].username.equals(usr)){
+                return clients[i];
+            }
+        }
+        return null;
+    }
 
 	public void remove(int ID) {
 		int pos = findClient(ID);
@@ -103,12 +117,12 @@ public class SocketServer implements Runnable {
 		}
 	}
 
-	public void Announce(String type, String sender, String content) {
-		String msg = type + ":" + sender + ":" + content + ":" + "All";
+	public void Announce(ChipCode cc) {
+		//String msg = type + ":" + sender + ":" + content + ":" + "All";
 		// Message msg = new Message(type, sender, content, "All");
-		// for (int i = 0; i < clientCount; i++) {
-		// clients[i].send(msg);
-		// }
+		 for (int i = 0; i < clientCount; i++) {
+                    clients[i].send(cc);
+		 }
 	}
 
 	private int findClient(int ID) {

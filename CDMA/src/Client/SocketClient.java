@@ -20,6 +20,7 @@ public class SocketClient implements Runnable {
 	ObjectInputStream In;
 
 	ChipCode cc = null;
+        ChipCode cc1 = null;
 	// public int chipArr[] = null;
 
 	public SocketClient(CDMAClient cdmaClient, ChipCode cc) throws IOException {
@@ -44,14 +45,23 @@ public class SocketClient implements Runnable {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
+            boolean once_time = false;
 		boolean keepRunning = true;
 		while (keepRunning) {
 
 			try {
 
 				// String msg = In.readLine();
-
-				cc = (ChipCode) In.readObject();
+                                if(!once_time){
+                                    cc1 = (ChipCode) In.readObject();
+                                    once_time = true;
+                                    System.out.println("In if once time");
+                                }
+                                else{
+                                    cc = (ChipCode) In.readObject();
+                                    System.out.println("In else once time");
+                                }
+				
 				System.out.println("Incoming : " + cc);
 				// String data[] = msg.split(":");
 				if (cc.status.equals("signout")) {
@@ -60,6 +70,9 @@ public class SocketClient implements Runnable {
 				} else if (cc.status.equals("test")) {
 					System.out.println("Connection Done");
 				}
+                                else if(cc.status.equals("message")){
+                                    
+                                }
 			} catch (Exception ex) {
 				System.out.println("Error in run " + ex);
 			}
