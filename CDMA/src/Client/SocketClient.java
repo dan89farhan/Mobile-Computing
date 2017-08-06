@@ -20,7 +20,7 @@ public class SocketClient implements Runnable {
 	ObjectInputStream In;
 
 	ChipCode cc = null;
-        ChipCode cc1 = null;
+	//ChipCode cc1 = null;
 	// public int chipArr[] = null;
 
 	public SocketClient(CDMAClient cdmaClient, ChipCode cc) throws IOException {
@@ -42,37 +42,50 @@ public class SocketClient implements Runnable {
 
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "static-access" })
 	@Override
 	public void run() {
-            boolean once_time = false;
+		boolean once_time = false;
 		boolean keepRunning = true;
 		while (keepRunning) {
 
 			try {
 
 				// String msg = In.readLine();
-                                if(!once_time){
-                                    cc1 = (ChipCode) In.readObject();
-                                    once_time = true;
-                                    System.out.println("In if once time");
-                                }
-                                else{
-                                    cc = (ChipCode) In.readObject();
-                                    System.out.println("In else once time");
-                                }
-				
+				cc = (ChipCode)In.readObject();
+
 				System.out.println("Incoming : " + cc);
 				// String data[] = msg.split(":");
 				if (cc.status.equals("signout")) {
 					cdmaClient.clientThread.stop();
 					System.exit(0);
+
 				} else if (cc.status.equals("test")) {
 					System.out.println("Connection Done");
+
+				} else if (cc.status.equals("reg")) {
+
+					if (cdmaClient.number.equals(cc.from)) {
+
+						System.out.println("Congratulaton!! " + cc.message);
+
+					} else {
+						System.out.println("New user added \nMobile Number " + cc.from);
+					}
+
+				} else if (cc.status.equals("message")) {
+
+					if (cdmaClient.number.equals(cc.to)) {
+						System.out.println("User "+cc.from+" sent a meesage but wait for server.");
+					}
+					else if(cdmaClient.number.equals(cc.from)){
+						System.out.println("Your message is sent successfully.");
+					}
+
+				} else if (cc.status.equals("wait")) {
+					System.out.println(cc.message);
+					//t.sleep(20000);
 				}
-                                else if(cc.status.equals("message")){
-                                    
-                                }
 			} catch (Exception ex) {
 				System.out.println("Error in run " + ex);
 			}
@@ -82,12 +95,14 @@ public class SocketClient implements Runnable {
 
 	public void send(ChipCode cc) {
 		try {
+
+			Out.reset();
 			Out.writeObject(cc);
 			Out.flush();
 			System.out.println("Outgoing : " + cc.toString());
 
 			// String data[] = msg.split(":");
-			
+
 		} catch (Exception ex) {
 			System.out.println("Exception SocketClient send()");
 		}
